@@ -1,0 +1,28 @@
+- name: Restore Full + Diff (SQL Server) and Level0 + Level1 (Oracle) and validate
+  hosts: db
+  gather_facts: false
+  vars:
+    mssql_full_backup_path: "{{ mssql_backups_container_dir }}/{{ mssql_full_backup_file }}"
+    mssql_diff_backup_path: "{{ mssql_backups_container_dir }}/{{ mssql_diff_backup_file }}"
+  tasks:
+    - name: SQL Server - Full + Diff restore
+      sqlserver_restore:
+        container_name: "{{ mssql_container_name }}"
+        sa_password: "{{ sa_password }}"
+        db_name: "{{ mssql_db_name }}"
+        restore_type: "diff"
+        full_backup: "{{ mssql_full_backup_path }}"
+        diff_backup: "{{ mssql_diff_backup_path }}"
+        move_mappings: "{{ mssql_move_mappings }}"
+        replace: true
+
+    - include_tasks: "../tasks/sqlserver_validate.yml"
+
+    - name: Oracle - Level 0 + Level 1 restore (RMAN applies incrementals)
+      oracle_restore:
+        container_name: "{{ oracle_container_name }}"
+        restore_type: "incremental"
+        backup_path: "{{ oracle_backups_container_dir }}"
+        oracle_sid: "{{ oracle_sid }}"
+
+    - include_tasks: "../tasks/oracle_validate.yml"

@@ -1,0 +1,20 @@
+- name: SQL Server Point-in-Time Restore and validate
+  hosts: db
+  gather_facts: false
+  vars:
+    mssql_full_backup_path: "{{ mssql_backups_container_dir }}/{{ mssql_full_backup_file }}"
+    mssql_log_backup_paths: "{{ mssql_log_backup_files | map('regex_replace', '^(.*)$', mssql_backups_container_dir ~ '/\\1') | list }}"
+  tasks:
+    - name: SQL Server - PIT restore with STOPAT
+      sqlserver_restore:
+        container_name: "{{ mssql_container_name }}"
+        sa_password: "{{ sa_password }}"
+        db_name: "{{ mssql_db_name }}"
+        restore_type: "pit"
+        full_backup: "{{ mssql_full_backup_path }}"
+        log_backups: "{{ mssql_log_backup_paths }}"
+        point_in_time: "{{ mssql_point_in_time }}"
+        move_mappings: "{{ mssql_move_mappings }}"
+        replace: true
+
+    - include_tasks: "../tasks/sqlserver_validate.yml"

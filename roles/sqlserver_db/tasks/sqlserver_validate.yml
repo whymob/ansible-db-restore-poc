@@ -1,0 +1,46 @@
+- name: Check SQL Server database state is ONLINE
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - "{{ mssql_container_name }}"
+      - /opt/mssql-tools/bin/sqlcmd
+      - -S
+      - localhost
+      - -U
+      - SA
+      - -P
+      - "{{ sa_password }}"
+      - -b
+      - -Q
+      - "SET NOCOUNT ON; SELECT state_desc FROM sys.databases WHERE name='{{ mssql_db_name }}';"
+  register: mssql_state
+  changed_when: false
+
+- name: Assert SQL Server db ONLINE
+  ansible.builtin.assert:
+    that:
+      - "'ONLINE' in mssql_state.stdout"
+
+- name: Optional: query sample table (if present)
+  ansible.builtin.command:
+    argv:
+      - docker
+      - exec
+      - "{{ mssql_container_name }}"
+      - /opt/mssql-tools/bin/sqlcmd
+      - -S
+      - localhost
+      - -U
+      - SA
+      - -P
+      - "{{ sa_password }}"
+      - -b
+      - -Q
+      - "USE [{{ mssql_db_name }}]; IF OBJECT_ID('dbo.demo') IS NOT NULL SELECT COUNT(*) AS cnt FROM dbo.demo ELSE SELECT -1 AS cnt;"
+  register: mssql_demo_cnt
+  changed_when: false
+  failed_when: false
+
+- debug:
+    var: mssql_demo_cnt.stdout

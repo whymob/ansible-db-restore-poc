@@ -1,0 +1,26 @@
+- name: Restore FULL backups (SQL Server + Oracle) and validate
+  hosts: db
+  gather_facts: false
+  vars:
+    mssql_full_backup_path: "{{ mssql_backups_container_dir }}/{{ mssql_full_backup_file }}"
+  tasks:
+    - name: SQL Server - Full restore only
+      sqlserver_restore:
+        container_name: "{{ mssql_container_name }}"
+        sa_password: "{{ sa_password }}"
+        db_name: "{{ mssql_db_name }}"
+        restore_type: "full"
+        full_backup: "{{ mssql_full_backup_path }}"
+        move_mappings: "{{ mssql_move_mappings }}"
+        replace: true
+
+    - include_tasks: "../tasks/sqlserver_validate.yml"
+
+    - name: Oracle - Full restore via RMAN (Level 0)
+      oracle_restore:
+        container_name: "{{ oracle_container_name }}"
+        restore_type: "full"
+        backup_path: "{{ oracle_backups_container_dir }}"
+        oracle_sid: "{{ oracle_sid }}"
+
+    - include_tasks: "../tasks/oracle_validate.yml"

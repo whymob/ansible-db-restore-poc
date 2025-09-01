@@ -1,0 +1,6 @@
+- name: Deploy SQL Server and Oracle containers
+  hosts: db
+  gather_facts: false
+  roles:
+    - sqlserver_db
+    - oracle_db

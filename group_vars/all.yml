@@ -1,0 +1,44 @@
+# ===== Global backup directories (host) =====
+backups_root: "{{ playbook_dir | dirname }}/backups"
+sql_backups_host_dir: "{{ backups_root }}/sqlserver"
+ora_backups_host_dir: "{{ backups_root }}/oracle"
+
+# ===== SQL Server settings =====
+mssql_container_name: sql2019
+mssql_image: "mcr.microsoft.com/mssql/server:2019-latest"
+mssql_port: 1433
+sa_password: "Str0ngP@ssword!"
+mssql_pid: "Developer"
+mssql_backups_container_dir: "/backups"
+mssql_db_name: "MyDB"
+
+# Optional mapping: logical -> physical paths (inside container)
+mssql_move_mappings:
+  - logical_name: "MyDB"
+    physical_name: "/var/opt/mssql/data/MyDB.mdf"
+  - logical_name: "MyDB_log"
+    physical_name: "/var/opt/mssql/data/MyDB_log.ldf"
+
+# Backup file names (place in backups/sqlserver)
+mssql_full_backup_file: "MyDB_full.bak"
+mssql_diff_backup_file: "MyDB_diff.bak"
+mssql_log_backup_files:
+  - "MyDB_log_1.trn"
+  - "MyDB_log_2.trn"
+
+# Point-in-time (must be covered by log backups)
+mssql_point_in_time: "2025-08-28 11:40:00"
+
+# ===== Oracle settings =====
+oracle_container_name: oracle21c
+oracle_image: "gvenzl/oracle-xe:21-slim"
+oracle_port: 1521
+oracle_password: "Str0ngP@ssword!"
+oracle_sid: "XE"
+oracle_backups_container_dir: "/backups"
+
+# PIT target
+oracle_point_in_time: "2025-08-28 11:40:00"
+
+# Startup wait time
+startup_wait_seconds: 300

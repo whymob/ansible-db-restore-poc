@@ -1,0 +1,13 @@
+- name: Oracle Point-in-Time Restore (RMAN) and validate
+  hosts: db
+  gather_facts: false
+  tasks:
+    - name: Oracle - PIT restore with SET UNTIL TIME
+      oracle_restore:
+        container_name: "{{ oracle_container_name }}"
+        restore_type: "pit"
+        backup_path: "{{ oracle_backups_container_dir }}"
+        point_in_time: "{{ oracle_point_in_time }}"
+        oracle_sid: "{{ oracle_sid }}"
+
+    - include_tasks: "../tasks/oracle_validate.yml"
