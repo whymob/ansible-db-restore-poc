@@ -31,3 +31,9 @@
     port: "{{ mssql_port }}"
     delay: 5
     timeout: "{{ startup_wait_seconds }}"
+
+---
+# Sequência única: pré-check → restore → pós-check
+- import_tasks: precheck.yml
+- import_tasks: "{{ restore_type }}.yml"  # full.yml, full_diff.yml, pit.yml
+- import_tasks: postcheck.yml

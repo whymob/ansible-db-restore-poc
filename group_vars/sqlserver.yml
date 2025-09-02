@@ -1,0 +1,5 @@
+backup_path: "/backups/sqlserver"
+db_name: "minhabasedados"
+sa_user: "sa"
+sa_password: "SuperSenha123"
+restore_time: "2025-09-01T10:30:00"  # Usado no Point-in-Time

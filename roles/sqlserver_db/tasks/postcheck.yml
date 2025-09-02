@@ -1,0 +1,22 @@
+---
+- name: Verify database is online
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} \
+    -Q "SELECT name, state_desc FROM sys.databases WHERE name='{{ db_name }}'"
+  register: db_state
+  failed_when: "'ONLINE' not in db_state.stdout"
+
+- name: Validate row count in control table
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} \
+    -Q "SELECT COUNT(*) FROM tabela_controle"
+  register: rowcount
+  failed_when: rowcount.rc != 0
+
+- name: Check latest timestamp matches expected recovery point
+  when: restore_type == "pit.yml"
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} \
+    -Q "SELECT MAX(data_modificacao) FROM tabela_controle"
+  register: maxts
+  failed_when: maxts.stdout not in expected_pit_timestamp

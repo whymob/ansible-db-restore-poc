@@ -1,0 +1,33 @@
+---
+- name: Test connectivity to SQL Server
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} -Q "SELECT 1"
+  register: connectivity
+  failed_when: connectivity.rc != 0
+
+- name: Check backup file exists
+  stat:
+    path: "{{ backup_path }}/{{ backup_mode }}/{{ db_name }}.bak"
+  register: backup_file
+  failed_when: not backup_file.stat.exists
+
+- name: Check disk free space
+  shell: |
+    Powershell "(Get-Volume -DriveLetter C).SizeRemaining"
+  register: free_space
+  changed_when: false
+  failed_when: free_space.stdout|float < min_free_space_bytes
+
+- name: Verify user has restore privilege
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} \
+      -Q "SELECT HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', 'ALTER')"
+  register: perms
+  failed_when: "'1' not in perms.stdout"
+
+- name: Validate backup file header
+  shell: |
+    sqlcmd -S localhost -U {{ sa_user }} -P {{ sa_password }} \
+    -Q "RESTORE HEADERONLY FROM DISK='{{ backup_path }}/{{ backup_mode }}/{{ db_name }}.bak'"
+  register: header
+  failed_when: header.rc != 0

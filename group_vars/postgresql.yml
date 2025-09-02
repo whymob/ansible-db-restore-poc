@@ -1,0 +1,5 @@
+backup_path: "/backups/postgresql"
+db_name: "minhabasedados"
+pg_user: "postgres"
+pg_password: "SenhaPostgres"
+restore_time: "2025-09-01 10:30:00"
