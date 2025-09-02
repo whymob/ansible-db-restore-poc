@@ -1,0 +1,30 @@
+- name: Ensure Oracle backups host directory exists
+  ansible.builtin.file:
+    path: "{{ ora_backups_host_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Run Oracle 21c XE container
+  community.docker.docker_container:
+    name: "{{ oracle_container_name }}"
+    image: "{{ oracle_image }}"
+    state: started
+    restart_policy: always
+    published_ports:
+      - "{{ oracle_port }}:1521"
+    env:
+      ORACLE_PASSWORD: "{{ oracle_password }}"
+    volumes:
+      - "{{ ora_backups_host_dir }}:{{ oracle_backups_container_dir }}"
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+
+- name: Wait for Oracle listener port
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: "{{ oracle_port }}"
+    delay: 10
+    timeout: "{{ startup_wait_seconds }}"
