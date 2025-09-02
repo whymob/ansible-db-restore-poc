@@ -1,3 +1,5 @@
+---
+
 - name: Ensure Oracle backups host directory exists
   ansible.builtin.file:
     path: "{{ ora_backups_host_dir }}"
@@ -28,3 +30,8 @@
     port: "{{ oracle_port }}"
     delay: 10
     timeout: "{{ startup_wait_seconds }}"
+
+
+- import_tasks: precheck.yml
+- import_tasks: "{{ restore_type }}"
+- import_tasks: postcheck.yml

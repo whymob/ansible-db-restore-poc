@@ -1,0 +1,5 @@
+---
+- name: Check if database restored correctly
+  shell: psql -U {{ pg_user }} -d {{ db_name }} -c "SELECT COUNT(*) FROM tabela_controle;"
+  register: rowcount
+  failed_when: rowcount.rc != 0

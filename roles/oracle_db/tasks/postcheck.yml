@@ -1,0 +1,14 @@
+---
+- name: Check database open state
+  shell: |
+    export ORACLE_SID={{ oracle_sid }}
+    echo "SELECT status FROM v$instance;" | sqlplus -S / as sysdba
+  register: status
+  failed_when: "'OPEN' not in status.stdout"
+
+- name: Validate control table rowcount
+  shell: |
+    export ORACLE_SID={{ oracle_sid }}
+    echo "SELECT COUNT(*) FROM tabela_controle;" | sqlplus -S / as sysdba
+  register: rowcheck
+  failed_when: rowcheck.rc != 0

@@ -1,0 +1,21 @@
+---
+- name: Check PostgreSQL is running
+  shell: pg_isready -h localhost -U {{ pg_user }}
+  register: pgstatus
+  failed_when: pgstatus.rc != 0
+
+- name: Validate dump file exists
+  stat:
+    path: "{{ backup_path }}/full/{{ db_name }}.dump"
+  register: dumpfile
+  failed_when: not dumpfile.stat.exists
+
+- name: Check user can create database
+  shell: psql -U {{ pg_user }} -c "CREATE DATABASE __testdb__; DROP DATABASE __testdb__;"
+  register: perm_test
+  failed_when: perm_test.rc != 0
+
+- name: Check free space
+  shell: df --output=avail / | tail -1
+  register: free_space_pg
+  failed_when: free_space_pg.stdout|int < min_free_space_kb

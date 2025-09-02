@@ -1,0 +1,23 @@
+---
+- name: Check Oracle listener
+  shell: lsnrctl status
+  register: listener
+  failed_when: "'READY' not in listener.stdout"
+
+- name: Verify RMAN backup presence
+  stat:
+    path: "{{ backup_path }}/full"
+  register: rman_dir
+  failed_when: not rman_dir.stat.exists
+
+- name: Check Oracle SID is valid
+  shell: echo "SELECT INSTANCE_NAME FROM v$instance;" | sqlplus -S / as sysdba
+  register: instance
+  failed_when: oracle_sid not in instance.stdout
+
+- name: Check Oracle instance status
+  shell: |
+    export ORACLE_SID={{ oracle_sid }}
+    echo "SELECT status FROM v$instance;" | sqlplus -S / as sysdba
+  register: inst
+  failed_when: "'OPEN' not in inst.stdout and 'MOUNTED' not in inst.stdout"

@@ -1,0 +1,4 @@
+---
+- import_tasks: precheck.yml
+- import_tasks: "{{ restore_type }}"
+- import_tasks: postcheck.yml
